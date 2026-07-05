@@ -21,15 +21,16 @@ N = 4000
 H = 80
 M = 500
 L = 100
-# NOTE: post 5 used BUDGET=4000 (8 units/compound), which only affords a
-# single precise read. At that scale the price-aware split is a pure corner
-# solution for every rho_hat < 1 (a single read's assumed variance does not
-# depend on rho at all -- there is no averaging to get wrong), so there is
-# no genuine interior allocation for a misspecified rho to distort. Raising
-# the budget to afford several precise reads per compound gives the split
-# real interior room to trade off cheap vs precise, which is what makes
-# "the wrong rho" a decision that can actually go wrong. Everything else
-# (N, H, M, L, sigma_c, sigma_e, r) is unchanged from post 5.
+# NOTE: post 5 used BUDGET=4000 (8 units/compound). At r=32 that only affords
+# a quarter of a precise read's worth of averaging (KE_MAX = 8/32 = 0.25) --
+# too thin a margin to be worth diverting from cheap reads except when
+# rho_hat is already large, so optimal_split collapses to a near-corner
+# solution (ke near 0 or pinned at the 0.25 ceiling) for most rho_hat.
+# Raising the budget to 16000 (32 units/compound, KE_MAX = 32/32 = 1.0) gives
+# the split real interior room to trade cheap reads against a genuine
+# fraction of a precise read, which is what makes "the wrong rho" a decision
+# that can actually go wrong. Everything else (N, H, M, L, sigma_c, sigma_e,
+# r) is unchanged from post 5.
 BUDGET = 16000
 SIGMA_C = 1.0
 SIGMA_E = 0.35
@@ -44,8 +45,8 @@ SIGMA_E = 0.35
 R = 32.0
 NREPS = 80
 
-PER_COMPOUND_BUDGET = BUDGET / M  # = 8.0
-KE_MAX = PER_COMPOUND_BUDGET / R  # = 1.0 at r=8
+PER_COMPOUND_BUDGET = BUDGET / M  # = 32.0
+KE_MAX = PER_COMPOUND_BUDGET / R  # = 1.0 at r=32 (the old BUDGET=4000/r=32 setup gave 0.25)
 
 
 def var_c(rho, k_total):
